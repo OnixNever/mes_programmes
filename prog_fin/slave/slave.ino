@@ -3,7 +3,6 @@
 //  Auteur : Dahnine Daoud 6ème Electronique INRACI
 //  Hardware : Arduino nano + 5 servo + 5 LEDS + 5 bouton et un écran next
 //  Date : 13/2/2023
-//  Exercice : Test prog doigts
 // **************************************************
 
 // ******************** LIBRAIRIES ******************
@@ -24,17 +23,17 @@ const int LES_PATES_DE_COMMANDE_DANS_LES_SERVO_MOTEUR[nombre_de_doigts] = { 2, 3
 // Les variables en Minuscule
 int caractere_recu_par_le_moniteur_serie_virtuel;
 char caractere_recu_par_le_moniteur_serie;
-int mode;
 int stop = 1000;
 int start = 1001;
 int verif;
 int ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[8] = { start, 0, 0, 0, 0, 0, verif, stop };
 
-byte angle_du_petit_doigt = 0;
-byte angle_de_annulaire = 0;
-byte angle_du_majeur = 0;
-byte angle_de_index = 0;
-byte angle_du_pouce = 0;
+
+int angle_du_petit_doigt = 0;
+int angle_de_annulaire = 0;
+int angle_du_majeur = 0;
+int angle_de_index = 0;
+int angle_du_pouce = 0;
 
 //************ DEFINITION DES OBJETS *****************
 SoftwareSerial mySerial(RX_VIRTUEL, TX_VIRTUEL);  // RX, TX
@@ -60,7 +59,7 @@ NexNumber val_BP2 = NexNumber(4, 6, "n_BP2");
 NexNumber val_BP3 = NexNumber(4, 8, "n_BP3");
 NexNumber val_BP4 = NexNumber(4, 10, "n_BP4");
 NexNumber val_BP5 = NexNumber(4, 12, "n_BP5");
-// add pages to list of events
+
 NexTouch *nex_listen_list[] = {
   &Chargement,
   &demarrage,
@@ -98,7 +97,6 @@ void setup() {
   Serial.write(0xff);
   Serial.write(0xff);
 
-  // start the display communication
   Chargement.attachPush(page_Chargement);
   demarrage.attachPush(page_demarrage);
   Choix_du_mode.attachPush(page_Choix_du_mode);
@@ -107,8 +105,7 @@ void setup() {
 }
 
 void loop() {
-  nexLoop(nex_listen_list);  // Check for any touch event
-  delay(5);  // for stability
+  nexLoop(nex_listen_list);
 }
 
 void page_Chargement(void *ptr) {
@@ -121,69 +118,87 @@ void page_demarrage(void *ptr) {
 
 void page_Choix_du_mode(void *ptr) {
   Serial.println("page_Choix_du_mode");
+  servo_du_pouce.write(0);
+  servo_de_index.write(0);
+  servo_du_majeur.write(0);
+  servo_de_annulaire.write(0);
+  servo_du_petit_doigt.write(0);
   while (1) {
-    nexLoop(nex_listen_list);  // Check for any touch event
+    nexLoop(nex_listen_list);
   }
 }
 
 void page_mode_bluetooth(void *ptr) {
   Serial.println("page_mode_bluetooth");
-  // while (nexLoop(nex_listen_list) == mode_bluetooth) {
 
   while (1) {
-    //if( Serial.available()) break;
-    nexLoop(nex_listen_list);  // Check for any touch event
-    delay(100);
-    for (byte i = 0; i < 8; i++) {
-      ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[i] = mySerial.read();
-    }
+    nexLoop(nex_listen_list);
 
+    unsigned char i = 1;
     verif = 0;
-    verif = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5];
-
-    if (verif == ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[6]) {
-      Serial.println("Data is True :)");
-
-      ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] = map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1], 0, 120, 120, 0);
-      if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] <= 120 || ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] >= 0) {
-        val_BT1.setValue(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1]);
-        servo_du_pouce.write(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1]);
+    if (mySerial.available()) {
+      if (mySerial.read() == 201) {
+        for (i = 1; i < 8; i++) {
+          if (mySerial.available()) {
+            ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[i] = mySerial.read();
+          }
+        }
       }
 
-      ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] = map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2], 0, 120, 120, 0);
-      if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] <= 120 || ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] >= 0) {
-        val_BT2.setValue(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2]);
-        servo_de_index.write(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2]);
-      }
+      // Serial.print("|");
+      // for (i = 0; i < 8; i++) {
+      //   Serial.print("  ");
+      //   Serial.print(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[i]);
+      //   Serial.print("  ");
+      // }
+      // Serial.print("  |");
 
-      ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] = map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3], 0, 120, 120, 0);
-      if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] <= 120 || ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] >= 0) {
-        val_BT3.setValue(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3]);
-        servo_du_majeur.write(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3]);
-      }
+      verif = (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5]) / 10;
 
-      ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] = map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4], 0, 120, 120, 0);
-      if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] <= 120 || ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] >= 0) {
-        val_BT4.setValue(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4]);
-        servo_de_annulaire.write(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4]);
-      }
+      if (verif == ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[6]) {
+        Serial.println("| ----- Data is True :) ---- |");
+        int ANGLE_COMPAR[5];
+        if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] != ANGLE_COMPAR[0]) {
+          servo_du_pouce.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1], 0, 120, 120, 0));
+          ANGLE_COMPAR[0] = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1];
+        }
+        if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] != ANGLE_COMPAR[1]) {
+          servo_de_index.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2], 0, 120, 120, 0));
+          ANGLE_COMPAR[1] = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2];
+        }
+        if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] != ANGLE_COMPAR[2]) {
+          servo_du_majeur.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3], 0, 120, 120, 0));
+          ANGLE_COMPAR[2] = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3];
+        }
+        if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] != ANGLE_COMPAR[3]) {
+          servo_de_annulaire.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4], 0, 120, 120, 0));
+          ANGLE_COMPAR[3] = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4];
+        }
+        if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5] != ANGLE_COMPAR[4]) {
+          servo_du_petit_doigt.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5], 0, 120, 120, 0));
+          ANGLE_COMPAR[4] = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5];
+        }
+        // servo_de_index.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2], 0, 120, 120, 0));
+        // servo_du_majeur.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3], 0, 120, 120, 0));
+        // servo_de_annulaire.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4], 0, 120, 120, 0));
+        // servo_du_petit_doigt.write(map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5], 0, 120, 120, 0));
 
-      ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5] = map(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5], 0, 120, 120, 0);
-      if (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5] <= 120 || ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5] >= 0) {
-        val_BT5.setValue(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5]);
-        servo_du_petit_doigt.write(ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5]);
+      } else {
+        Serial.println("| ----- Data is False :( ---- |");
       }
-
-    } else {
-      Serial.println("Data is False :( !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
   }
 }
 
 void page_mode_boutonge(void *ptr) {
   Serial.println("page_mode_boutonge");
+  servo_du_pouce.write(0);
+  servo_de_index.write(0);
+  servo_du_majeur.write(0);
+  servo_de_annulaire.write(0);
+  servo_du_petit_doigt.write(0);
   while (1) {
-    nexLoop(nex_listen_list);  // Check for any touch event
+    nexLoop(nex_listen_list);
 
     if (bp(1)) {
       switch (angle_du_petit_doigt) {
