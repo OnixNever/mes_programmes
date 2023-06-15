@@ -12,12 +12,6 @@
 #define RX_VIRTUEL 10
 #define TX_VIRTUEL 11
 
-//******* DEFINITION DES VARIABLES GLOBALES **********
-// Les variables en Minuscule
-
-
-
-
 //************ DEFINITION DES OBJETS *****************
 SoftwareSerial mySerial(RX_VIRTUEL, TX_VIRTUEL);  // RX, TX
 
