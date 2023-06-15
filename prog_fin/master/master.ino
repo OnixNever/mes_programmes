@@ -3,7 +3,6 @@
 //  Auteur : Dahnine Daoud 6ème Electronique INRACI
 //  Hardware : Arduino nano + 5 servo + 5 LEDS + 5 bouton et un écran next
 //  Date : 13/2/2023
-//  Exercice : Test prog doigts
 // **************************************************
 
 // ******************** LIBRAIRIES ******************
@@ -15,11 +14,8 @@
 
 //******* DEFINITION DES VARIABLES GLOBALES **********
 // Les variables en Minuscule
-int state = 0;
-int STOP = 1001;
-int START = 1000;
-int VERIF;
-int ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[8] = { START, 0, 0, 0, 0, 0, VERIF, STOP };
+
+
 
 
 //************ DEFINITION DES OBJETS *****************
@@ -28,9 +24,9 @@ SoftwareSerial mySerial(RX_VIRTUEL, TX_VIRTUEL);  // RX, TX
 //****************************************************
 //*************** INITIALISATION *********************
 //****************************************************
-void setup() {           // put your setup code here, to run once
-  Serial.begin(9600);    //Begin serial communication with Arduino and Arduino IDE (Serial Monitor)
-  mySerial.begin(9600);  // Default communication rate of the Bluetooth module
+void setup() {
+  Serial.begin(9600);
+  mySerial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
@@ -38,6 +34,10 @@ void setup() {           // put your setup code here, to run once
 //*************** BOUCLE INFINIE *********************
 //****************************************************
 void loop() {
+  int STOP = 200;
+  int START = 201;
+  int VERIF = 0;
+  int ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[8] = { START, 0, 0, 0, 0, 0, VERIF, STOP };
 
   int val_analog_du_1_doigt = analogRead(14);  // on lit la valeur de la résistance sur D1
   ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] = map(val_analog_du_1_doigt, 0, 550, 0, 120);
@@ -55,7 +55,7 @@ void loop() {
   ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5] = map(val_analog_du_5_doigt, 0, 550, 0, 120);
 
   VERIF = 0;
-  ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[6] = ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5];
+  ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[6] = (ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[1] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[2] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[3] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[4] + ANGLE_POUR_PILOTER_LES_SERVO_MOTEUR[5]) / 10;
 
   Serial.print("|");
   for (byte i = 0; i < 8; i++) {
@@ -65,5 +65,4 @@ void loop() {
     Serial.print("  ");
   }
   Serial.println("|");
-  delay("100");
 }
